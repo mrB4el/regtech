@@ -1,5 +1,5 @@
 <?php
-    class JSON_class
+    class JSON
     {
         static function get_data($json_data)
         {

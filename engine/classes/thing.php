@@ -1,6 +1,5 @@
 <?php
-    class Thing
-    {
+    class Thingobject {
         public $id;
         public $name;
         public $brand;
@@ -10,6 +9,13 @@
         public $description;
         public $owner;
         public $photo;
+    }
+    class Thing {
+        public $thing; 
+        
+        public function __construct() {
+            $this->thing = new hingobject();
+        }
 
         public function add() {
 

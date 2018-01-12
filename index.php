@@ -4,14 +4,10 @@
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);
     //</errors>
-    require 'engine/classes/profile.php';
-    require 'engine/classes/user.php';
-    require 'engine/template.php';
-    require 'engine/MySQL_Class.php';
+
+
     require 'config.php';
-    require 'api/API.php';
-    
-    $mysql = new MySQL_Class();
+    require 'engine/loader.php';
     
     $error = array(
         'title' => "Ошибка такая-то",
@@ -29,6 +25,7 @@
 
     $do = "main";
     $type = "";
+    $profile;
 
     //Получаемые параметры
 	if ($api->issetParam("do")) $do = $api->getParam("do");
@@ -37,20 +34,16 @@
     if($do == "main") {
         $tpl->content = $tpl->render('main');
 
-        $profileObject = new Profile();
-        echo $profileObject->login;
-        $profileObject->login();
-        echo $profileObject->login;
-        
-        $userObject = new User();
-        $userObject->test();
-        echo $userObject->login;
-        echo $profileObject->login;
+        $profile = new Profile();
+        echo '1 '.$profile->profile->login;
+        $profile->login();
+        echo '2 '.$profile->profile->login;
+
     }
 	
     if($do == "auth") {
-		$tpl->content = $tpl->render('auth');
-    
+        
+        $tpl->content = $tpl->render('registration_done');
         
         if ($api->issetParam("type")) $type = $api->getParam("type");
         
@@ -70,14 +63,27 @@
                 $tpl->system_messages = $tpl->render('error');
             }
             else {
-
                 $tpl->ul_login = $login;
                 $tpl->ul_password = $password;
-                $tpl->content = $tpl->render('user_login');
+                $tpl->content = $tpl->render('login_success');
             }
         }
+        
         if( $type == "registration" ) {
-                $tpl->content = $tpl->render('login_extra');
+            
+            if ($api->issetParam("login")) $login = $api->getParam("login");
+            if ($api->issetParam("password1")) $password = $api->getParam("password1");
+            if ($api->issetParam("email")) $email = $api->getParam("email");
+            echo $login.$password.$email;
+            
+            $profile = new Profile();
+
+            $profile->profile->email = $email;
+            $profile->profile->login = $login;
+            $profile->profile->password = $password;
+            $profile->registrate($mysql);
+
+            $tpl->content = $tpl->render('registration_done');
         }
         
         if( $type == "device_login" ) 

@@ -1,14 +1,28 @@
 <?php
-    class Profile {
+    class ProfileObject {
         public $id;
+        public $email;
         public $login;
         public $password;
         public $registation_date;
+    }
 
-        function registrate() {}
-        function login() {
-            $this->login = "meh";
+    class Profile {
+        public $profile; 
+        
+        public function __construct() {
+            $this->profile = new ProfileObject();
         }
+
+        function registrate($mysql) {
+            //toDo
+            $mysql->register($this->profile->login, $this->profile->password, $this->profile->email);
+        }
+        
+        function login() {
+            $this->profile->login = "meh";
+        }
+        
         function logout() {}
     }
 ?>
