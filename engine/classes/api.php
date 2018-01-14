@@ -8,8 +8,7 @@
         static function getParam( $name, $defaultValue = "" ) {
             return isset($_POST[$name]) ? $_POST[$name] : (isset($_GET[$name]) ? $_GET[$name] : $defaultValue);
         }      
-		
-		
+
 		function get_time() {
             $today = date("Y-m-d H:i:s");
 			$plain_data = array('time' => $today);

@@ -19,10 +19,16 @@
             $mysql->register($this->profile->login, $this->profile->password, $this->profile->email);
         }
         
-        function login() {
-            $this->profile->login = "meh";
+        function login($mysql) {
+            $result = $mysql->login($this->profile->login, $this->profile->password);
+
+            $this->profile->email = $result["email"];
         }
         
         function logout() {}
+
+        function test() {
+            echo "hello".$this->profile->login;
+        }
     }
 ?>

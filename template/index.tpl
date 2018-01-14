@@ -11,11 +11,9 @@
     </head>
 
     <body class="main">
-        <div class="content">
+        <main class="content">
             <?=$this->system_messages?>
             <?=$this->content?>
-            <?=$this->login?>
-            <?=$this->device_registration?>
-        </div>
+        </main>
     </body>
 </html>

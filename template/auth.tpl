@@ -4,8 +4,8 @@
      
      <div class="contblock">
         <form method="POST">
-                <input name="do" value="login" type="hidden"/>
-                <input name="type" value="user_login" type="hidden"/>
+                <input name="do" value="api" type="hidden"/>
+                <input name="type" value="login" type="hidden"/>
                 <input name="login" type="text" maxlength="20" size="15" placeholder="Ваш логин"/>
                  <input name="password" type="text" maxlength="20" size="15" placeholder="Ваш пароль"/>
                  

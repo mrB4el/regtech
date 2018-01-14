@@ -8,7 +8,10 @@
 
     require 'config.php';
     require 'engine/loader.php';
-    
+    $host  = $_SERVER['HTTP_HOST'];
+    $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+    $index = 'index.php';
+
     $error = array(
         'title' => "Ошибка такая-то",
         'content' => "Косяк в том-то"
@@ -26,68 +29,39 @@
     $do = "main";
     $type = "";
     $profile;
+    
+    session_start();
+
+
 
     //Получаемые параметры
 	if ($api->issetParam("do")) $do = $api->getParam("do");
-			
+    
 	//Кухня
     if($do == "main") {
         $tpl->content = $tpl->render('main');
-
-        $profile = new Profile();
-        echo '1 '.$profile->profile->login;
-        $profile->login();
-        echo '2 '.$profile->profile->login;
-
     }
 	
     if($do == "auth") {
         
-        $tpl->content = $tpl->render('registration_done');
-        
+        if(isset($_SESSION['profile']->profile)) {
+            header("Location: http://$host$uri/?do=cabinet");
+            exit;
+        }
+
+        $tpl->content = $tpl->render('auth');
+
         if ($api->issetParam("type")) $type = $api->getParam("type");
         
         if( $type == "login" ) {
-
-            if ($api->issetParam("login")) $login = $api->getParam("login");
-            if ($api->issetParam("password")) $password = $api->getParam("password");
-            
-            $password = md5(md5($password));
-            $uid = $mysql->check_login($login, $password);
-            
-            if($uid == 0) {
-
-                $error['title'] = "Ошибка с профилем";
-                $error['content'] = "Такой пары пользователь/пароль не существует";
-                $tpl->error = $error;
-                $tpl->system_messages = $tpl->render('error');
-            }
-            else {
-                $tpl->ul_login = $login;
-                $tpl->ul_password = $password;
-                $tpl->content = $tpl->render('login_success');
-            }
+            $tpl->content = $tpl->render('login');
         }
         
         if( $type == "registration" ) {
-            
-            if ($api->issetParam("login")) $login = $api->getParam("login");
-            if ($api->issetParam("password1")) $password = $api->getParam("password1");
-            if ($api->issetParam("email")) $email = $api->getParam("email");
-            echo $login.$password.$email;
-            
-            $profile = new Profile();
-
-            $profile->profile->email = $email;
-            $profile->profile->login = $login;
-            $profile->profile->password = $password;
-            $profile->registrate($mysql);
-
-            $tpl->content = $tpl->render('registration_done');
+            $tpl->content = $tpl->render('registration');
         }
         
-        if( $type == "device_login" ) 
-        {
+        if( $type == "device_login" ) {
             $login = "Guest";
             $pin = "000000";
                         
@@ -207,9 +181,94 @@
 	}
     
     if($do == "cabinet") {
-        $tpl->content = $tpl->render('device_registration');
+        
+        if(!isset($_SESSION['profile']->profile)) {
+            header("Location: http://$host$uri/?do=auth");
+            exit;
+        }
+        $profile = new Profile();
+        $profile = $_SESSION['profile'];
+        $profile->test();
+
+        echo 'cabinet';
+        $tpl->content = $tpl->render('cabinet');
     }
     
-    echo $tpl->render('index');
+    if($do == "reset") {
+        session_destroy();
+    }
     
+    if($do == "api") {
+        if ($api->issetParam("type")) $type = $api->getParam("type");
+        
+        if($type == "login") {
+            echo 'login';
+            
+            if ($api->issetParam("login")) $login = $api->getParam("login");
+            if ($api->issetParam("password")) $password = $api->getParam("password");
+            
+            $profile = new Profile();
+            $password = md5(md5($password));
+            $profile->profile->login = $login;
+            $profile->profile->password = $password;
+            $profile->login($mysql);           
+            
+            if($profile->profile->email == NULL) {
+
+                $error['title'] = "Ошибка с профилем";
+                $error['content'] = "Такой пары пользователь/пароль не существует";
+                $tpl->error = $error;
+                $tpl->system_messages = $tpl->render('error');
+            }
+            else {
+                echo 'done';
+                $_SESSION['profile'] = $profile;
+            }
+        }
+
+        if($type == "registration") {
+            echo 'registration: ';
+
+            if ($api->issetParam("login")) $login = $api->getParam("login");
+            if ($api->issetParam("password1")) $password = $api->getParam("password1");
+            if ($api->issetParam("email")) $email = $api->getParam("email");
+            echo $login.$password.$email;
+            
+            $profile = new Profile();
+
+            $profile->profile->email = $email;
+            $profile->profile->login = $login;
+            $profile->profile->password = $password;
+            $profile->registrate($mysql);
+            
+            echo 'done';
+        }
+
+        if($type == "thing") {
+            echo 'thing';
+            if ($api->issetParam("action")) $action = $api->getParam("action");
+            
+            if($action == "add") {
+                echo 'add';
+                if ($api->issetParam("action")) $action = $api->getParam("action");
+                
+                $thing["name"] = $api->getParam("name");
+                $thing["brand"] = $api->getParam("brand");
+                $thing["serialnumber"] = $api->getParam("serialnumber");
+                $thing["guarantee_period"] = $api->getParam("guarantee_period");
+                $thing["description"] = $api->getParam("description");
+                $thing["photo"] = $api->getParam("photo");
+
+
+                $mysql->insertData("things", $thing);
+            }
+
+            if($action == "connect") {
+                echo 'connect';
+                if ($api->issetParam("action")) $action = $api->getParam("action");
+    
+            }
+        }
+    }
+    echo $tpl->render('index');
 ?>
