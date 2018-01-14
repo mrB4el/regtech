@@ -4,7 +4,7 @@
         public $email;
         public $login;
         public $password;
-        public $registation_date;
+        public $registration_date;
     }
 
     class Profile {
@@ -21,14 +21,11 @@
         
         function login($mysql) {
             $result = $mysql->login($this->profile->login, $this->profile->password);
-
+            $this->profile->id = $result["id"];
             $this->profile->email = $result["email"];
+            $this->profile->registration_date = $result["registration_date"];
         }
         
         function logout() {}
-
-        function test() {
-            echo "hello".$this->profile->login;
-        }
     }
 ?>

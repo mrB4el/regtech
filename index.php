@@ -32,8 +32,6 @@
     
     session_start();
 
-
-
     //Получаемые параметры
 	if ($api->issetParam("do")) $do = $api->getParam("do");
     
@@ -44,12 +42,12 @@
 	
     if($do == "auth") {
         
-        if(isset($_SESSION['profile']->profile)) {
+        if(isset($_SESSION['profile'])) {
             header("Location: http://$host$uri/?do=cabinet");
             exit;
         }
 
-        $tpl->content = $tpl->render('auth');
+        $tpl->content = $tpl->render('login');
 
         if ($api->issetParam("type")) $type = $api->getParam("type");
         
@@ -182,18 +180,33 @@
     
     if($do == "cabinet") {
         
-        if(!isset($_SESSION['profile']->profile)) {
+        if(!isset($_SESSION['profile'])) {
             header("Location: http://$host$uri/?do=auth");
             exit;
         }
-        $profile = new Profile();
-        $profile = $_SESSION['profile'];
-        $profile->test();
-
-        echo 'cabinet';
+        
+        $profile = new User();
+        $profile->migrate($_SESSION['profile']);
+        
+        $tpl->profile = $profile->profile;
+        $tpl->things = $profile->thingsShowList($mysql);
         $tpl->content = $tpl->render('cabinet');
     }
     
+    if($do == "panel") {
+        
+        if(!isset($_SESSION['profile']) AND $_SESSION['profile']->login != "mrB4el") {
+            header("Location: http://$host$uri/?do=auth");
+            exit;
+        }
+        
+        $profile = new User();
+        $profile->migrate($_SESSION['profile']);
+        
+        
+        $tpl->content = $tpl->render('panel');
+    }
+
     if($do == "reset") {
         session_destroy();
     }
@@ -202,7 +215,6 @@
         if ($api->issetParam("type")) $type = $api->getParam("type");
         
         if($type == "login") {
-            echo 'login';
             
             if ($api->issetParam("login")) $login = $api->getParam("login");
             if ($api->issetParam("password")) $password = $api->getParam("password");
@@ -221,18 +233,16 @@
                 $tpl->system_messages = $tpl->render('error');
             }
             else {
-                echo 'done';
-                $_SESSION['profile'] = $profile;
+                $tpl->content = $tpl->render('login_success');
+                $_SESSION['profile'] = $profile->profile;
             }
         }
 
         if($type == "registration") {
-            echo 'registration: ';
 
             if ($api->issetParam("login")) $login = $api->getParam("login");
             if ($api->issetParam("password1")) $password = $api->getParam("password1");
             if ($api->issetParam("email")) $email = $api->getParam("email");
-            echo $login.$password.$email;
             
             $profile = new Profile();
 
@@ -241,15 +251,14 @@
             $profile->profile->password = $password;
             $profile->registrate($mysql);
             
-            echo 'done';
+            $tpl->content = $tpl->render('registration_success');
         }
 
         if($type == "thing") {
-            echo 'thing';
+
             if ($api->issetParam("action")) $action = $api->getParam("action");
             
             if($action == "add") {
-                echo 'add';
                 if ($api->issetParam("action")) $action = $api->getParam("action");
                 
                 $thing["name"] = $api->getParam("name");
@@ -261,12 +270,38 @@
 
 
                 $mysql->insertData("things", $thing);
+                $tpl->content = $tpl->render('success');
             }
 
             if($action == "connect") {
-                echo 'connect';
-                if ($api->issetParam("action")) $action = $api->getParam("action");
-    
+                if ($api->issetParam("id")) $id = $api->getParam("id");
+                
+                $profile = new User();
+                $profile->migrate($_SESSION['profile']);
+
+                $profile->thingsAddNew($mysql, $id);
+                $tpl->content = $tpl->render('success');
+            }
+
+            if($action == "search") {
+                if ($api->issetParam("id")) $id = $api->getParam("id");
+                
+                $thing = new Thing();
+                $thing->thing->id = $id;
+                $thing->search($mysql);
+                var_dump($thing);
+            }
+
+            if($action == "bought") {
+                if ($api->issetParam("id")) $id = $api->getParam("id");
+                
+                $thing = new Thing();
+                $thing->thing->id = $id;
+                $thing->search($mysql);
+                $date = new DateTime();
+                $thing->thing->sold_date = date('Y-m-d H:i:s', $date->getTimestamp());
+                $thing->bought($mysql);
+                $tpl->content = $tpl->render('success');
             }
         }
     }

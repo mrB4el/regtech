@@ -73,10 +73,64 @@
             }
         }
         
-        
+        function recieveStrictData($table, $keys) {
+            $key = array_keys($keys);
+            $val = array_values($keys);
+            $conditions = "((".$key[0]." = \"".$val[0]."\")";
 
-        function get_uid($username)
-        {
+            for($i = 1; $i < count($key); $i++)
+            {
+                $conditions = $conditions." AND (".$key[$i]." = \"".$val[$i]."\")";
+            }
+            $conditions = $conditions.")";
+
+            $sql = "SELECT * FROM $table WHERE $conditions";
+            //echo $sql;
+
+            if($query = $this->mysqli->prepare($sql)) {
+                $query->execute();
+                $result = $query->get_result();
+                $row = $result->fetch_assoc();
+                
+                $result = $row;
+            }
+            else {
+                var_dump($this->mysqli->error);
+            }
+            
+            return $result;
+        }
+
+        function updateData($table, $condition, $new) {
+            
+            $key = array_keys($condition);
+            $val = array_values($condition);
+            $conditions = "((".$key[0]." = \"".$val[0]."\")";
+
+            for($i = 1; $i < count($key); $i++)
+            {
+                $conditions = $conditions." AND (".$key[$i]." = \"".$val[$i]."\")";
+            }
+            $conditions = $conditions.")";
+
+            $key = array_keys($new);
+            $val = array_values($new);
+            
+            $news = $key[0]." = \"".$val[0]."\"";
+            for($i = 1; $i < count($key); $i++)
+            {
+                $news = $news.", ".$key[$i]." = \"".$val[$i]."\"";
+            }
+            
+            $sql = "UPDATE $table SET $news WHERE $conditions";
+            //echo $sql;
+            if($query = $this->mysqli->prepare($sql)){
+                $query->execute();
+            } else {
+                var_dump($this->mysqli->error);
+            }
+        }
+        function get_uid($username) {
                       
             $username = mysqli_real_escape_string($this->mysqli, $username);
               
