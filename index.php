@@ -6,12 +6,14 @@
     //</errors>
 
 
-    require 'config.php';
+    
+    class Main {
+        function __construct(){
+            require 'config.php';
     require 'engine/loader.php';
     $host  = $_SERVER['HTTP_HOST'];
     $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
     $index = 'index.php';
-
     $error = array(
         'title' => "Ошибка такая-то",
         'content' => "Косяк в том-то"
@@ -306,4 +308,8 @@
         }
     }
     echo $tpl->render('index');
+}
+}
+$main = new Main();
+
 ?>

@@ -1,7 +1,5 @@
 <div class="cabinet">
-    <h1>Панель управления</h1>
-    <div class="text">Список ваших покупок</div>
-    
+    <h1>Панель управления</h1>  
     <div class="contblock">
         <div class="text">Поиск покупки</div>
         <form method="POST">
